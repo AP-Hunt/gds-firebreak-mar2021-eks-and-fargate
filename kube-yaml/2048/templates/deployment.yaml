@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: deployment-2048
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-2048
+  replicas: {{.Values.replicaCount}}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: app-2048
+    spec:
+      containers:
+        - image: alexwhen/docker-2048
+          imagePullPolicy: Always
+          name: app-2048
+          ports:
+            - containerPort: 80

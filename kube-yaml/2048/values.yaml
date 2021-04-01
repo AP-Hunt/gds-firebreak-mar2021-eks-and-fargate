@@ -1,0 +1,12 @@
+# Default values for 2048.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 5
+
+podAnnotations: {}
+
+ingress:
+  certificateArn: ""
+
+namespace: 2048
