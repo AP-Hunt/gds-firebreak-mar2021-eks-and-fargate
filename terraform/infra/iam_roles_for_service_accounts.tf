@@ -9,7 +9,7 @@ resource "aws_iam_role" "eks_service_accounts_role" {
   # Allow Amazon EKS to assume this role on our behalf
   assume_role_policy = data.aws_iam_policy_document.eks_role_assume_role_policy.json
 
-  tags = local.tags
+  tags = var.tags
 }
 
 # In order for a K8s service account to assume a role, it must

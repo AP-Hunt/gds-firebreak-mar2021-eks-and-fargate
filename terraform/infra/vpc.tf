@@ -13,14 +13,14 @@ resource "aws_vpc" "vpc" {
   enable_dns_hostnames = true
   enable_dns_support = true
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-eks-vpc"
   })
 }
 
 resource "aws_eip" "cluster_ip" {
   vpc = true
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-eks-cluster-ip"
   })
 }
@@ -28,7 +28,7 @@ resource "aws_eip" "cluster_ip" {
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.vpc.id
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-internet-gateway"
   })
 }
@@ -43,7 +43,7 @@ resource "aws_nat_gateway" "nat_gateway" {
   # to have a route to the internet gateway
   subnet_id = local.public_subnets[0].id
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-nat"
   })
 }
@@ -51,7 +51,7 @@ resource "aws_nat_gateway" "nat_gateway" {
 resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.vpc.id
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-public-route-table"
   })
 }
@@ -59,7 +59,7 @@ resource "aws_route_table" "public_route_table" {
 resource "aws_route_table" "private_route_table" {
   vpc_id = aws_vpc.vpc.id
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-private-route-table"
   })
 }
@@ -128,7 +128,7 @@ resource "aws_subnet" "subnets" {
   cidr_block = each.value.cidr_block
   availability_zone = data.aws_availability_zones.zones.names[each.value.zone_index]
 
-  tags = merge(local.tags, each.value.tags, {
+  tags = merge(var.tags, each.value.tags, {
     Name = "${var.deploy_env}-${each.key}"
   })
 }

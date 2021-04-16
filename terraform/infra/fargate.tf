@@ -9,7 +9,7 @@ resource "aws_eks_fargate_profile" "kube_system" {
     namespace = "kube-system"
   }
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-fp-kube-system"
   })
 
@@ -17,7 +17,7 @@ resource "aws_eks_fargate_profile" "kube_system" {
 
   timeouts {
     create = "30m"
-    delete = "30m"
+    delete = "60m"
   }
 }
 
@@ -32,7 +32,7 @@ resource "aws_eks_fargate_profile" "apps" {
     namespace = "apps"
   }
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-fp-apps"
   })
 
@@ -40,7 +40,7 @@ resource "aws_eks_fargate_profile" "apps" {
 
   timeouts {
     create = "30m"
-    delete = "30m"
+    delete = "60m"
   }
 }
 
@@ -59,7 +59,7 @@ resource "aws_iam_role" "fargate_role" {
     Version = "2012-10-17"
   })
 
-  tags = local.tags
+  tags = var.tags
 }
 
 # Attach the managed EKS Fargate pod execution role to the fargate role

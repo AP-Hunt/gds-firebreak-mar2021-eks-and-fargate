@@ -1,4 +1,4 @@
-deploy: terraform-init terraform-apply patch-coredns
+deploy: terraform-init terraform-apply post-apply
 
 terraform-init:
 	cd terraform/ && terraform init
@@ -17,13 +17,20 @@ kubectl:
       --alias "$$(terraform output -raw -state terraform/eks-andyhunt.tfstate cluster_name)" && \
     kubectl config get-contexts "$$(kubectl config current-context)"
 
-patch-coredns: kubectl
+post-apply: kubectl patch-coredns patch-aws-node-role
+
+patch-coredns:
 	kubectl patch deployment coredns \
 		--context "$$(terraform output -raw -state terraform/eks-andyhunt.tfstate cluster_name)" \
         -n kube-system \
         --type json \
         -p='[{"op": "replace", "path": "/spec/template/metadata/annotations/eks.amazonaws.com~1compute-type", "value": "fargate"}]' && \
 	kubectl wait --for condition=available --timeout 5m deploy/coredns -n kube-system
+
+patch-aws-node-role:
+	kubectl annotate serviceaccount \
+      -n kube-system aws-node \
+      "eks.amazonaws.com/role-arn=$$(terraform output -raw -state terraform/eks-andyhunt.tfstate aws_vpc_cni_role_arn)"
 
 deploy-2048:
 	helm install apps-2048 kube-yaml/2048 \

@@ -15,32 +15,27 @@ terraform {
   }
 }
 
-data "aws_eks_cluster" "cluster_data" {
-  depends_on = [aws_eks_cluster.eks_cluster]
-  name = aws_eks_cluster.eks_cluster.name
-}
-
 provider "kubernetes" {
-  host = data.aws_eks_cluster.cluster_data.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster_data.certificate_authority[0].data)
+  host = var.cluster_endpoint
+  cluster_ca_certificate = base64decode(var.cluster_ca_data)
   exec {
     api_version = "client.authentication.k8s.io/v1alpha1"
-    args = ["eks", "get-token", "--cluster-name", data.aws_eks_cluster.cluster_data.name]
+    args = ["eks", "get-token", "--cluster-name", var.cluster_name]
     command = "aws"
   }
 }
 
 provider "helm" {
   kubernetes {
-    host = data.aws_eks_cluster.cluster_data.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster_data.certificate_authority[0].data)
+    host = var.cluster_endpoint
+    cluster_ca_certificate = base64decode(var.cluster_ca_data)
     exec {
       api_version = "client.authentication.k8s.io/v1alpha1"
       args = [
         "eks",
         "get-token",
         "--cluster-name",
-        data.aws_eks_cluster.cluster_data.name]
+        var.cluster_name]
       command = "aws"
     }
   }

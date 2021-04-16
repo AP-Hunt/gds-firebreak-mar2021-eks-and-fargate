@@ -11,18 +11,18 @@ resource "aws_iam_role" "aws_lb_controller" {
     Statement = [{
       Effect = "Allow",
       Principal = {
-        Federated = aws_iam_openid_connect_provider.cluster_oidc_provider.arn
+        Federated = var.cluster_oidc_provider_arn
       },
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
         StringEquals = {
-          "${aws_iam_openid_connect_provider.cluster_oidc_provider.url}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "${var.cluster_oidc_provider_url}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
         }
       }
     }]
   })
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.deploy_env}-awslbcontroller-role"
   })
 }
@@ -45,8 +45,6 @@ resource "aws_iam_role_policy_attachment" "aws_lb_controller_policy_attachment" 
 
 # The Kubernetes service account to be used by the load balancer controller
 resource "kubernetes_service_account" "load_balancer_service_account" {
-  depends_on = [aws_eks_cluster.eks_cluster]
-
   metadata {
     name = "aws-load-balancer-controller"
     namespace = "kube-system"
@@ -60,9 +58,27 @@ resource "kubernetes_service_account" "load_balancer_service_account" {
   }
 }
 
+# Use a null resource to install the Custom Resource Definitions needed
+# for the AWS Load Balancer Controller, before the Helm chart is installed
+resource "null_resource" "aws_load_balancer_controller_crds" {
+  triggers = {
+    eks_endpoint = var.cluster_endpoint
+  }
+
+  provisioner "local-exec" {
+    command = <<SCRIPT
+      aws eks update-kubeconfig \
+        --name "${var.cluster_name}" \
+        --alias "${var.cluster_name}" && \
+      kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
+SCRIPT
+
+  }
+}
+
 # Deploy the Helm chart for the AWS Load Balancer Controller
 resource "helm_release" "aws_load_balancer_controller" {
-  depends_on = [aws_eks_cluster.eks_cluster]
+  depends_on = [null_resource.aws_load_balancer_controller_crds]
 
   name = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
@@ -71,13 +87,13 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   values = [<<YAML
 ---
-vpcId: "${aws_vpc.vpc.id}"
-clusterName: "${aws_eks_cluster.eks_cluster.name}"
+vpcId: "${var.vpc_id}"
+clusterName: "${var.cluster_name}"
 serviceAccount:
   create: false
   name: "${kubernetes_service_account.load_balancer_service_account.metadata[0].name}"
 region: eu-west-1
-defaultTags: ${jsonencode(local.tags)}
+defaultTags: ${jsonencode(var.tags)}
 YAML
 ]
 }

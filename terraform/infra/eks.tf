@@ -9,7 +9,7 @@ resource "aws_eks_cluster" "eks_cluster" {
     subnet_ids = [ for _, subnet in aws_subnet.subnets: subnet.id ]
   }
 
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = local.eks_cluster_name
   })
 
@@ -44,7 +44,7 @@ resource "aws_iam_role" "eks_role" {
 }
 POLICY
 
-  tags = local.tags
+  tags = var.tags
 }
 
 # Attach the managed EKS Cluster IAM Policy to the cluster role
