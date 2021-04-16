@@ -28,9 +28,12 @@ patch-coredns:
 	kubectl wait --for condition=available --timeout 5m deploy/coredns -n kube-system
 
 patch-aws-node-role:
+	# Annotate role and restart pods
 	kubectl annotate serviceaccount \
       -n kube-system aws-node \
-      "eks.amazonaws.com/role-arn=$$(terraform output -raw -state terraform/eks-andyhunt.tfstate aws_vpc_cni_role_arn)"
+      --overwrite \
+      "eks.amazonaws.com/role-arn=$$(terraform output -raw -state terraform/eks-andyhunt.tfstate aws_vpc_cni_role_arn)" && \
+    kubectl delete pods -n kube-system -l k8s-app=aws-node
 
 deploy-2048:
 	helm install apps-2048 kube-yaml/2048 \
