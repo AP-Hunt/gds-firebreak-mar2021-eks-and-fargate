@@ -1,0 +1,134 @@
+## Service A
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-a
+  namespace: private-networking
+spec:
+  selector:
+    service: service-a
+  ports:
+  - port: 80
+    targetPort: 8080
+
+
+## Deployment A
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-a
+  namespace: private-networking
+spec:
+  selector:
+    matchLabels:
+      service: service-a
+  template:
+    metadata:
+      labels:
+        service: service-a
+        fargate: "true"
+    spec:
+      containers:
+      - name: echo-a
+        image: ealen/echo-server:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+
+
+
+## Service B
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-b
+  namespace: private-networking
+spec:
+  selector:
+    service: service-b
+  ports:
+  - port: 80
+    targetPort: 8080
+
+## Deployment B
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-b
+  namespace: private-networking
+spec:
+  selector:
+    matchLabels:
+      service: service-b
+  template:
+    metadata:
+      labels:
+        service: service-b
+        fargate: "true"
+    spec:
+      containers:
+      - name: echo-b
+        image: ealen/echo-server:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+
+### Service C
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: service-c
+#  namespace: private-networking
+#spec:
+#  selector:
+#    service: service-c
+#  ports:
+#  - port: 80
+#    targetPort: 8080
+#
+### Deployment C
+#---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: deployment-c
+#  namespace: private-networking
+#spec:
+#  selector:
+#    matchLabels:
+#      service: service-c
+#  template:
+#    metadata:
+#      labels:
+#        service: service-c
+#        fargate: "true"
+#    spec:
+#      containers:
+#      - name: echo-c
+#        image: ealen/echo-server:latest
+#        resources:
+#          limits:
+#            memory: "128Mi"
+#            cpu: "100m"
+#        ports:
+#        - containerPort: 8080
+#        env:
+#        - name: PORT
+#          value: "8080"

@@ -1,0 +1,12 @@
+---
+# Deny all ingress and egress traffic across the board
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: private-networking
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress

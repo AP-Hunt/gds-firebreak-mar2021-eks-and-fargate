@@ -1,0 +1,37 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: service-b-ingress-from-nowhere
+  namespace: private-networking
+spec:
+  podSelector:
+    matchLabels:
+      service: service-b
+  policyTypes:
+    - Ingress
+  ingress: [ ]
+#---
+#apiVersion: networking.k8s.io/v1
+#kind: NetworkPolicy
+#metadata:
+#  name: service-b-to-and-from-service-a
+#  namespace: private-networking
+#spec:
+#  podSelector:
+#    matchLabels:
+#      service: service-b
+#  policyTypes:
+#    - Egress
+#    - Ingress
+#  ingress:
+#    - from:
+#        - podSelector:
+#            matchLabels:
+#              service: service-a
+#  egress:
+#    - to:
+#        - podSelector:
+#            matchLabels:
+#              service: service-a
+

@@ -1,0 +1,13 @@
+---
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: private-networking
+spec:
+  order: 10
+  # Specifying Ingress and Egress without further rules
+  # means "all denied"
+  types:
+    - Ingress
+    - Egress
