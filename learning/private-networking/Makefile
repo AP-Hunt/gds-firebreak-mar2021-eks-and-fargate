@@ -22,13 +22,13 @@ delete-calico:
 
 test:
 	@echo "Test access from A to B"
-	@kubectl exec \
+	@-kubectl exec \
 	  -n private-networking \
 	  "$$(kubectl get pods -n private-networking -l service=service-a -o json | jq -r '.items[] | .metadata.name')" \
-	  -- wget -O - service-b.private-networking
+	  -- wget -T10 -O - service-b.private-networking
 
 	@echo "Test access from B to A"
-	@kubectl exec \
+	@-kubectl exec \
 	  -n private-networking \
 	  "$$(kubectl get pods -n private-networking -l service=service-b -o json | jq -r '.items[] | .metadata.name')" \
-	  -- wget -O - service-a.private-networking
+	  -- wget -T10 -O - service-a.private-networking
